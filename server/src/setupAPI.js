@@ -1,13 +1,34 @@
+const cors = require('cors');
+const express = require('express');
+
+const secrets = {
+  1: 'iamthebest',
+  2: 'not_a_morning_person',
+};
+
+
+function checkSecret(id, s) {
+  return secrets[id] === s;
+}
+
+function formatDate(d) {
+  return `${d.getYear()}-${d.getMonth()}-${d.getDate()} ${d.getHours()}:${d.getMinutes()}`;
+}
 
 function setup(app) {
+  setupCORS(app);
 
   app.get('/time', (request, response) => {
-    response.send(new Date());
+    response.json(formatDate(new Date()));
   });
 
-  app.get('/hello/:who', (request, response) => {
-    const name = request.param.who;
+  app.get('/hello/:who?', (request, response) => {
+    const name = request.params.who || 'nobody';
+    response.json(`Hello ${name}`);
+  });
 
+  app.post('/hello', (request, response) => {
+    const name = request.body.who;
     response.send(`Hello ${name}`);
   });
 
@@ -17,25 +38,16 @@ function setup(app) {
     2: 100
   };
 
-  const secrets = {
-    1: 'iamthebest',
-    2: 'not_a_morning_person',
-  };
-
-
-  app.use('/bank/*', (request, response) => {
+  app.use('/bank/*', (request, response, next) => {
     const from = request.body.fromAccount;
-    const amount = request.body.secret;
+    const secret = request.body.secret;
 
-
-    if (secrets[from] != secret) {
-      response.send("not authorized");
-    }
+    next();
   });
 
-  app.get('/bank/balance/:accountNumber', (request, response) => {
-    const accountNumber = request.param.fromAccount;
-    response.send(account[accountNumber]);
+  app.post('/bank/balance', (request, response) => {
+    const accountNumber = request.body.fromAccount;
+    response.send('' + accounts[accountNumber]);
   });
 
   app.post('/bank/transfer', (request, response) => {
@@ -53,6 +65,16 @@ function setup(app) {
     }
   });
 
+}
+
+function setupCORS(app) {
+  app.use(cors());
+  app.options('*', cors());
+  app.use(express.json());
+  app.use(function (err, req, res, next) {
+    console.error(err.stack)
+    res.status(500).json(err);
+  })
 }
 
 module.exports = setup;
