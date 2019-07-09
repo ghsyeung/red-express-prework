@@ -16,8 +16,6 @@ function formatDate(d) {
 }
 
 function setup(app) {
-  setupCORS(app);
-
   app.get('/time', (request, response) => {
     response.json(formatDate(new Date()));
   });
@@ -53,7 +51,7 @@ function setup(app) {
   app.post('/bank/transfer', (request, response) => {
     const from = request.body.fromAccount;
     const to = request.body.toAccount;
-    const amount = request.body.amount;
+    const amount = parseInt(request.body.amount);
 
     if (accounts[from] < amount) {
       response.send("not enough money");
@@ -64,17 +62,6 @@ function setup(app) {
       response.send("ok");
     }
   });
-
-}
-
-function setupCORS(app) {
-  app.use(cors());
-  app.options('*', cors());
-  app.use(express.json());
-  app.use(function (err, req, res, next) {
-    console.error(err.stack)
-    res.status(500).json(err);
-  })
 }
 
 module.exports = setup;

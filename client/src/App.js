@@ -72,7 +72,7 @@ export class Account extends Component {
       body: JSON.stringify({
         fromAccount: accountId,
         toAccount: to,
-        amount: transfer,
+        amount: parseInt(transfer),
         secret,
       })
     }).then(response => response.text())
